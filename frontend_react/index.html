@@ -1,13 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html>
+
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script> $(document).ready(function () {
+			let loginToken = "";
+			$("#btnGreet").click(function () {
+				$.ajax({
+					url: "http://localhost:9000/graphql",
+					contentType: "application/json",
+					headers: { "Authorization": 'bearer ' + loginToken },
+					type: 'POST',
+					data: JSON.stringify({
+						query: `{ greetingWithAuth }`
+					}),
+					success: function (result) {
+						if (result.errors) {
+							alert(result.errors[0].message)
+							return
+						}
+						$("#greetingDiv").html("<h1>" + result.data.greetingWithAuth + "</h1>")
+					},
+					error: function (jQxhr, error) {
+						if (jQxhr.status == 401) {
+							$("#greetingDiv")
+								.html('please authenticate first!!')
+								.css({ "color": "red", 'font-weight': 'bold' })
+							return;
+						}
+						$("#greetingDiv")
+							.html('error')
+							.css("color", "red");
+					}
+				});
+			});
+			$('#btnAuthenticate').click(function () {
+				var email = $("#txtEmail").val();
+				var password = $("#txtPwd").val();
+
+				if (email && password) {
+					$.ajax({
+						url: "http://localhost:9000/login",
+						contentType: "application/json",
+						type: "POST",
+						data: JSON.stringify({ email, password }),
+						success: function (response) {
+							loginToken = response.token;
+
+							$('#authStatus').html("authenticated successfully")
+								.css({ "color": "green", 'font-weight': 'bold' });
+
+							$("#greetingDiv").html('').css({ 'color': '' });
+						}, error: (xhr, err) => alert('error')
+					})
+				} else alert("email and pwd empty")
+			})
+		}); </script>
+</head>
+
+<body>
+	<h1> GraphQL Authentication </h1>
+	<hr />
+	<section> <button id="btnGreet">Greet</button> <br /> <br />
+		<div id="greetingDiv"> </div>
+	</section> <br /> <br /> <br />
+	<hr />
+	<section id="LoginSection">
+		<header>
+			<h2>*Login first to access greeting </h2>
+		</header> <input type="text" value="mohtashim.mohammad@tutorialpoint.org" placeholder="enter email"
+			id="txtEmail" />
+
+		<br /> <input type="password" value="pass123" placeholder="enter password" id="txtPwd" />
+		<br />
+		<input type="button" id="btnAuthenticate" value="Login" />
+		<p id="authStatus"></p>
+	</section>
+</body>
+
 </html>
