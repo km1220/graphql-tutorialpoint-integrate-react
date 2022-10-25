@@ -1,4 +1,25 @@
 type Query {
   greeting: String
   sayHello(name: String!): String
+  students: [Student]
+}
+
+
+type Student {
+  id: ID!
+  firstName: String
+  lastName: String
+  password: String
+  collegeId: String
+  
+
+  # ---------------- nested query ----------------
+  college: College
+}
+
+type College {
+  id: ID!
+  name: String
+  location: String
+  rating: Float
 }
